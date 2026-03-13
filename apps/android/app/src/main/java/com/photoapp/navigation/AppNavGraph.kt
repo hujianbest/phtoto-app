@@ -164,9 +164,16 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 onSubmit = { reason ->
                     scope.launch {
                         val success = runCatching {
-                            ApiClient.createPostReport(postId = postId, reason = reason)
+                            ApiClient.createPostReport(
+                                postId = postId,
+                                reason = reason,
+                                reporterEmail = uiState.email
+                            )
                         }.getOrDefault(false)
                         authViewModel.addReportHistory(postId = postId, reason = reason)
+                        if (success) {
+                            authViewModel.syncReportHistoryFromRemote()
+                        }
                         reportHint = if (success) {
                             "举报已提交，感谢反馈。"
                         } else {

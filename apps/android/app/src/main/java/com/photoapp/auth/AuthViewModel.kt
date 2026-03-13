@@ -83,6 +83,7 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                     preferences[TOKEN_KEY] = token
                     preferences[EMAIL_KEY] = safeEmail
                 }
+                syncReportHistoryFromRemote()
                 _uiState.value = _uiState.value.copy(isLoading = false, errorMessage = null)
                 return@launch
             }
@@ -124,6 +125,24 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
                 val current = decodeReportHistory(preferences[REPORT_HISTORY_KEY]).toMutableList()
                 current.add(0, entry)
                 preferences[REPORT_HISTORY_KEY] = encodeReportHistory(current.take(20))
+            }
+        }
+    }
+
+    fun syncReportHistoryFromRemote() {
+        viewModelScope.launch {
+            val email = _uiState.value.email.trim()
+            if (email.isBlank()) {
+                return@launch
+            }
+            val remoteHistory = runCatching {
+                ApiClient.fetchReportHistory(email)
+            }.getOrDefault(emptyList())
+            if (remoteHistory.isEmpty()) {
+                return@launch
+            }
+            getApplication<Application>().authDataStore.edit { preferences ->
+                preferences[REPORT_HISTORY_KEY] = encodeReportHistory(remoteHistory.take(20))
             }
         }
     }

@@ -8,6 +8,7 @@ export interface Report {
   targetType: ReportTargetType;
   targetId: string;
   reason: string;
+  reporterEmail: string;
   status: ReportStatus;
   createdAt: string;
   updatedAt: string;
@@ -17,6 +18,7 @@ export interface CreateReportInput {
   targetType: ReportTargetType;
   targetId: string;
   reason: string;
+  reporterEmail?: string;
 }
 
 export class ReportStore {
@@ -29,6 +31,7 @@ export class ReportStore {
       targetType: input.targetType,
       targetId: input.targetId.trim(),
       reason: input.reason.trim(),
+      reporterEmail: input.reporterEmail?.trim().toLowerCase() || "anonymous@photo.app",
       status: "pending",
       createdAt: now,
       updatedAt: now
@@ -58,6 +61,13 @@ export class ReportStore {
     report.status = status;
     report.updatedAt = new Date().toISOString();
     return report;
+  }
+
+  listByReporterEmail(reporterEmail: string): Report[] {
+    const normalized = reporterEmail.trim().toLowerCase();
+    return [...this.reports.values()]
+      .filter((report) => report.reporterEmail === normalized)
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
   }
 }
 

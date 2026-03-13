@@ -73,12 +73,17 @@ object ApiClient {
 
     suspend fun createPostReport(
         postId: String,
-        reason: String
+        reason: String,
+        reporterEmail: String? = null
     ): Boolean = withContext(Dispatchers.IO) {
         val payload = JSONObject()
             .put("targetType", "post")
             .put("targetId", postId.trim())
             .put("reason", reason.trim())
+        val safeReporterEmail = reporterEmail?.trim()?.lowercase().orEmpty()
+        if (safeReporterEmail.isNotBlank()) {
+            payload.put("reporterEmail", safeReporterEmail)
+        }
 
         val result = request(
             method = "POST",
@@ -86,6 +91,34 @@ object ApiClient {
             body = payload.toString()
         )
         result.code == 201
+    }
+
+    suspend fun fetchReportHistory(email: String): List<String> = withContext(Dispatchers.IO) {
+        val safeEmail = email.trim().lowercase()
+        if (safeEmail.isBlank()) {
+            return@withContext emptyList()
+        }
+        val result = request(
+            method = "GET",
+            url = endpoint("/reports?reporterEmail=${safeEmail.encodeToUrlQuery()}")
+        )
+        if (result.code !in 200..299 || result.body.isBlank()) {
+            return@withContext emptyList()
+        }
+
+        val root = JSONObject(result.body)
+        val items = root.optJSONArray("items") ?: JSONArray()
+        buildList {
+            for (index in 0 until items.length()) {
+                val item = items.optJSONObject(index) ?: continue
+                val createdAt = item.optString("createdAt", "")
+                val targetId = item.optString("targetId", "")
+                val reason = item.optString("reason", "")
+                if (createdAt.isNotBlank() && targetId.isNotBlank()) {
+                    add("$createdAt | $targetId | ${reason.ifBlank { "未填写原因" }}")
+                }
+            }
+        }
     }
 
     suspend fun joinWeeklyChallenge(email: String): String? = withContext(Dispatchers.IO) {

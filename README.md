@@ -67,3 +67,4 @@
 - 每周挑战参与已接入 API：`POST /challenges/weekly/join`。
 - 新增关注关系与关注流 API：`POST /social/follow`、`GET /feed/following`。
 - Android 发现页支持“推荐流/关注流”切换，并支持关注作者动作。
+- 举报历史已后端化：`GET /reports?reporterEmail=...`，客户端提交举报时会携带举报人邮箱并同步历史。
