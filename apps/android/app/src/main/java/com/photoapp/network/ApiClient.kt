@@ -49,7 +49,8 @@ object ApiClient {
         title: String,
         intent: String,
         imageUrl: String,
-        exifSummary: String
+        exifSummary: String,
+        authorEmail: String? = null
     ): Boolean = withContext(Dispatchers.IO) {
         val payload = JSONObject()
             .put("title", title.trim())
@@ -57,6 +58,10 @@ object ApiClient {
             .put("imageUrl", imageUrl.trim())
             .put("intent", intent.trim())
             .put("exif", JSONObject().put("shutter", exifSummary.trim()))
+        val safeAuthorEmail = authorEmail?.trim()?.lowercase().orEmpty()
+        if (safeAuthorEmail.isNotBlank()) {
+            payload.put("authorEmail", safeAuthorEmail)
+        }
 
         val result = request(
             method = "POST",
@@ -103,13 +108,44 @@ object ApiClient {
             method = "GET",
             url = endpoint("/feed/recommended")
         )
-        if (result.code !in 200..299 || result.body.isBlank()) {
+        parseFeedPosts(result)
+    }
+
+    suspend fun fetchFollowingPosts(email: String): List<Post> = withContext(Dispatchers.IO) {
+        val safeEmail = email.trim().lowercase()
+        if (safeEmail.isBlank()) {
             return@withContext emptyList()
+        }
+        val result = request(
+            method = "GET",
+            url = endpoint("/feed/following?email=${safeEmail.encodeToUrlQuery()}")
+        )
+        parseFeedPosts(result)
+    }
+
+    suspend fun followAuthor(
+        followerEmail: String,
+        followeeEmail: String
+    ): Boolean = withContext(Dispatchers.IO) {
+        val payload = JSONObject()
+            .put("followerEmail", followerEmail.trim().lowercase())
+            .put("followeeEmail", followeeEmail.trim().lowercase())
+        val result = request(
+            method = "POST",
+            url = endpoint("/social/follow"),
+            body = payload.toString()
+        )
+        result.code in 200..299
+    }
+
+    private fun parseFeedPosts(result: HttpResult): List<Post> {
+        if (result.code !in 200..299 || result.body.isBlank()) {
+            return emptyList()
         }
 
         val root = JSONObject(result.body)
         val items = root.optJSONArray("items") ?: JSONArray()
-        buildList {
+        return buildList {
             for (index in 0 until items.length()) {
                 val item = items.optJSONObject(index) ?: continue
                 add(
@@ -119,7 +155,7 @@ object ApiClient {
                         intent = item.optString("intent", ""),
                         imageUrl = item.optString("imageUrl", ""),
                         exifSummary = buildExifSummary(item.optJSONObject("exif")),
-                        authorName = "社区用户"
+                        authorName = item.optString("authorEmail", item.optString("authorName", "社区用户"))
                     )
                 )
             }
@@ -130,6 +166,9 @@ object ApiClient {
                 post.imageUrl.isNotBlank()
         }
     }
+
+    private fun String.encodeToUrlQuery(): String =
+        java.net.URLEncoder.encode(this, Charsets.UTF_8.name())
 
     private fun buildExifSummary(exif: JSONObject?): String {
         if (exif == null) {

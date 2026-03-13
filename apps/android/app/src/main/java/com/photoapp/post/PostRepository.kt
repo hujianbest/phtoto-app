@@ -15,6 +15,11 @@ data class Post(
 )
 
 object PostRepository {
+    enum class FeedMode {
+        RECOMMENDED,
+        FOLLOWING
+    }
+
     private val postStore = mutableStateListOf<Post>()
 
     val posts: SnapshotStateList<Post> = postStore
@@ -59,7 +64,8 @@ object PostRepository {
         intent: String,
         imageUrl: String,
         exifSummary: String,
-        authorName: String
+        authorName: String,
+        viewerEmail: String = ""
     ) {
         // Keep local UX responsive first.
         publishLocal(title, intent, imageUrl, exifSummary, authorName)
@@ -68,13 +74,22 @@ object PostRepository {
                 title = title,
                 intent = intent,
                 imageUrl = imageUrl,
-                exifSummary = exifSummary
+                exifSummary = exifSummary,
+                authorEmail = viewerEmail
             )
         }
     }
 
-    suspend fun syncFromRemote() {
-        val remotePosts = runCatching { ApiClient.fetchRecommendedPosts() }.getOrDefault(emptyList())
+    suspend fun syncFromRemote(
+        mode: FeedMode = FeedMode.RECOMMENDED,
+        viewerEmail: String = ""
+    ) {
+        val remotePosts = runCatching {
+            when (mode) {
+                FeedMode.RECOMMENDED -> ApiClient.fetchRecommendedPosts()
+                FeedMode.FOLLOWING -> ApiClient.fetchFollowingPosts(viewerEmail)
+            }
+        }.getOrDefault(emptyList())
         if (remotePosts.isEmpty()) {
             return
         }

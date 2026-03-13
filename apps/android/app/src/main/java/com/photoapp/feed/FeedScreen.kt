@@ -30,6 +30,9 @@ fun FeedScreen(
     onOpenProfile: () -> Unit,
     onOpenChallenge: () -> Unit,
     onReportPost: (postId: String) -> Unit,
+    onSelectRecommended: () -> Unit,
+    onSelectFollowing: () -> Unit,
+    onFollowAuthor: (authorName: String) -> Unit,
     reportHint: String?
 ) {
     var filterKeyword by remember { mutableStateOf("") }
@@ -54,6 +57,18 @@ fun FeedScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(text = "发现页")
+        Button(
+            onClick = onSelectRecommended,
+            modifier = Modifier.testTag("feed_tab_recommended_button")
+        ) {
+            Text(text = "推荐流")
+        }
+        Button(
+            onClick = onSelectFollowing,
+            modifier = Modifier.testTag("feed_tab_following_button")
+        ) {
+            Text(text = "关注流")
+        }
         Button(
             onClick = onOpenCreatePost,
             modifier = Modifier.testTag("open_create_post_button")
@@ -112,6 +127,14 @@ fun FeedScreen(
                                     .testTag("feed_report_button")
                             ) {
                                 Text(text = "举报")
+                            }
+                            Button(
+                                onClick = { onFollowAuthor(post.authorName) },
+                                modifier = Modifier
+                                    .padding(top = 8.dp)
+                                    .testTag("feed_follow_author_button")
+                            ) {
+                                Text(text = "关注作者")
                             }
                         }
                     }

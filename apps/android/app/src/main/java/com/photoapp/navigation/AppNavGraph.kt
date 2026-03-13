@@ -49,6 +49,7 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
     val navController = rememberNavController()
     val scope = rememberCoroutineScope()
     var reportHint by remember { mutableStateOf<String?>(null) }
+    var feedMode by remember { mutableStateOf(PostRepository.FeedMode.RECOMMENDED) }
     val uiState by authViewModel.uiState.collectAsState()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
@@ -64,7 +65,7 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
 
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
-            PostRepository.syncFromRemote()
+            PostRepository.syncFromRemote(mode = feedMode, viewerEmail = uiState.email)
         }
     }
 
@@ -89,6 +90,32 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 onReportPost = { postId ->
                     navController.navigate("$ROUTE_REPORT/$postId")
                 },
+                onSelectRecommended = {
+                    feedMode = PostRepository.FeedMode.RECOMMENDED
+                    scope.launch {
+                        PostRepository.syncFromRemote(mode = feedMode, viewerEmail = uiState.email)
+                    }
+                },
+                onSelectFollowing = {
+                    feedMode = PostRepository.FeedMode.FOLLOWING
+                    scope.launch {
+                        PostRepository.syncFromRemote(mode = feedMode, viewerEmail = uiState.email)
+                    }
+                },
+                onFollowAuthor = { authorName ->
+                    scope.launch {
+                        runCatching {
+                            if (uiState.email.isNotBlank() && authorName.contains("@")) {
+                                ApiClient.followAuthor(
+                                    followerEmail = uiState.email,
+                                    followeeEmail = authorName
+                                )
+                            } else {
+                                false
+                            }
+                        }
+                    }
+                },
                 reportHint = reportHint
             )
         }
@@ -101,9 +128,10 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                             intent = intent,
                             imageUrl = imageUrl,
                             exifSummary = exifSummary,
-                            authorName = authorName
+                            authorName = authorName,
+                            viewerEmail = uiState.email
                         )
-                        PostRepository.syncFromRemote()
+                        PostRepository.syncFromRemote(mode = feedMode, viewerEmail = uiState.email)
                     }
                     navController.popBackStack()
                 }
