@@ -1,0 +1,52 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: photoapp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-photoapp}
+      POSTGRES_USER: ${POSTGRES_USER:-photoapp}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_postgres}
+    ports:
+      # Development only. Do not expose directly in production.
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: photoapp-redis
+    restart: unless-stopped
+    command:
+      [
+        "redis-server",
+        "--appendonly",
+        "yes",
+        "--requirepass",
+        "${REDIS_PASSWORD:-change_me_redis}",
+      ]
+    ports:
+      # Development only. Do not expose directly in production.
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  minio:
+    image: minio/minio:RELEASE.2025-02-07T23-21-09Z
+    container_name: photoapp-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-change_me_minio}
+    command: server /data --console-address ":9001"
+    ports:
+      # Development only. Do not expose directly in production.
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
+  minio_data:
