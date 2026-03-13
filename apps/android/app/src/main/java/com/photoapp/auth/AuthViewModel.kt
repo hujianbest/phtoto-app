@@ -101,9 +101,15 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
     fun joinWeeklyChallenge() {
         viewModelScope.launch {
+            val email = _uiState.value.email
+            val joinedAtFromApi = if (email.isNotBlank()) {
+                runCatching { ApiClient.joinWeeklyChallenge(email) }.getOrNull()
+            } else {
+                null
+            }
             getApplication<Application>().authDataStore.edit { preferences ->
                 if (preferences[CHALLENGE_JOINED_AT_KEY].isNullOrBlank()) {
-                    preferences[CHALLENGE_JOINED_AT_KEY] = Instant.now().toString()
+                    preferences[CHALLENGE_JOINED_AT_KEY] = joinedAtFromApi ?: Instant.now().toString()
                 }
             }
         }

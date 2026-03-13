@@ -7,6 +7,7 @@ import { registerFeedRoutes } from "./modules/feed/feed.routes";
 import { registerModerationRoutes } from "./modules/moderation/moderation.routes";
 import { registerReportRoutes } from "./modules/reports/report.routes";
 import { registerMetricsPlugin } from "./plugins/metrics";
+import { registerChallengeRoutes } from "./modules/challenges/challenge.routes";
 
 export function buildServer() {
   const app = Fastify();
@@ -18,5 +19,6 @@ export function buildServer() {
   registerFeedRoutes(app);
   registerModerationRoutes(app);
   registerReportRoutes(app);
+  registerChallengeRoutes(app);
   return app;
 }

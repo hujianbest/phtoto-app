@@ -83,6 +83,21 @@ object ApiClient {
         result.code == 201
     }
 
+    suspend fun joinWeeklyChallenge(email: String): String? = withContext(Dispatchers.IO) {
+        val payload = JSONObject().put("email", email.trim().lowercase())
+        val result = request(
+            method = "POST",
+            url = endpoint("/challenges/weekly/join"),
+            body = payload.toString()
+        )
+        if (result.code !in 200..299 || result.body.isBlank()) {
+            return@withContext null
+        }
+        runCatching {
+            JSONObject(result.body).optString("joinedAt", "")
+        }.getOrDefault("").takeIf { it.isNotBlank() }
+    }
+
     suspend fun fetchRecommendedPosts(): List<Post> = withContext(Dispatchers.IO) {
         val result = request(
             method = "GET",
