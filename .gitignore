@@ -25,4 +25,4 @@ coverage/
 
 # Docker local data
 *.pid
-tools/gradle-8.7-bin.zip
+tools/
