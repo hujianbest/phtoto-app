@@ -1,34 +1,26 @@
 package com.photoapp
 
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.core.app.ActivityScenario
 import com.photoapp.post.PostRepository
-import kotlinx.coroutines.runBlocking
 import org.junit.Rule
 import org.junit.Test
-
-private val Context.authDataStore by preferencesDataStore(name = "auth")
 
 class PostPublishTest {
 
     @get:Rule
-    val composeRule = createAndroidComposeRule<MainActivity>()
+    val composeRule = createEmptyComposeRule()
 
     @Test
     fun createPost_thenOpenFeed_cardIsVisible() {
-        runBlocking {
-            val context = InstrumentationRegistry.getInstrumentation().targetContext
-            context.authDataStore.edit { it.clear() }
-            PostRepository.clearForTest()
-        }
+        resetAppState()
+        PostRepository.clearForTest()
+        ActivityScenario.launch(MainActivity::class.java)
 
         composeRule.onNodeWithTag("login_button").performClick()
         composeRule.onNodeWithTag("open_create_post_button").performClick()

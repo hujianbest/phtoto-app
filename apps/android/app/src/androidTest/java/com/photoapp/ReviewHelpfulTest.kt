@@ -1,31 +1,23 @@
 package com.photoapp
 
-import android.content.Context
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertTextEquals
-import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.compose.ui.test.junit4.createEmptyComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.preferencesDataStore
-import androidx.test.platform.app.InstrumentationRegistry
-import kotlinx.coroutines.runBlocking
+import androidx.test.core.app.ActivityScenario
 import org.junit.Rule
 import org.junit.Test
-
-private val Context.authDataStore by preferencesDataStore(name = "auth")
 
 class ReviewHelpfulTest {
 
     @get:Rule
-    val composeRule = createAndroidComposeRule<MainActivity>()
+    val composeRule = createEmptyComposeRule()
 
     @Test
     fun clickHelpful_countPlusOne() {
-        runBlocking {
-            val context = InstrumentationRegistry.getInstrumentation().targetContext
-            context.authDataStore.edit { it.clear() }
-        }
+        resetAppState()
+        ActivityScenario.launch(MainActivity::class.java)
 
         composeRule.onNodeWithTag("login_button").performClick()
         composeRule.onNodeWithTag("open_review_sheet_button").performClick()
