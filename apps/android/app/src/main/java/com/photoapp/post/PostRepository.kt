@@ -2,6 +2,7 @@ package com.photoapp.post
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import com.photoapp.network.ApiClient
 import java.util.UUID
 
 data class Post(
@@ -18,7 +19,7 @@ object PostRepository {
 
     val posts: SnapshotStateList<Post> = postStore
 
-    fun publish(
+    fun publishLocal(
         title: String,
         intent: String,
         imageUrl: String,
@@ -51,6 +52,34 @@ object PostRepository {
                 authorName = safeAuthorName
             )
         )
+    }
+
+    suspend fun publish(
+        title: String,
+        intent: String,
+        imageUrl: String,
+        exifSummary: String,
+        authorName: String
+    ) {
+        // Keep local UX responsive first.
+        publishLocal(title, intent, imageUrl, exifSummary, authorName)
+        runCatching {
+            ApiClient.createPost(
+                title = title,
+                intent = intent,
+                imageUrl = imageUrl,
+                exifSummary = exifSummary
+            )
+        }
+    }
+
+    suspend fun syncFromRemote() {
+        val remotePosts = runCatching { ApiClient.fetchRecommendedPosts() }.getOrDefault(emptyList())
+        if (remotePosts.isEmpty()) {
+            return
+        }
+        postStore.clear()
+        postStore.addAll(remotePosts)
     }
 
     fun clearForTest() {

@@ -30,6 +30,21 @@
 4. 关闭并清理容器：
    - `docker compose down`
 
+### 启动 API（本地）
+
+在 `services/api` 目录执行：
+
+- 安装依赖：`npm install`
+- 启动开发服务（需提供 JWT 密钥）：
+  - PowerShell: `$env:JWT_SECRET="dev_only_secret_for_local_run"; npm run dev`
+- 默认监听：`http://localhost:3000`
+
+### 启动 Android（连接本地 API）
+
+- 确认模拟器已启动（API 34）。
+- 在 `apps/android` 目录执行：`.\\gradlew.bat installDebug`
+- Android 默认访问 `http://10.0.2.2:3000` 作为 API 地址。
+
 ## 安全说明（开发环境）
 
 - `docker-compose.yml` 默认从环境变量读取凭据，不在文件中写死密码
@@ -38,4 +53,14 @@
 
 ## 当前状态
 
-当前仓库已完成 Task 1-7：开发基线、API 健康检查、鉴权、帖子与 EXIF、点评系统、推荐发现流、审核与举报流程；后续继续推进 Task 8-11。
+当前仓库已完成 Task 1-11，并完成 Android -> API 基础联通：
+- 登录：优先走 `/auth/login`，首次用户自动注册兜底；
+- 发帖：优先走 `/posts`，同时保留本地离线体验；
+- 发现页：登录后自动尝试同步 `/feed/recommended`；
+- 无后端时可退化到离线演示模式，保证核心流程可体验。
+
+近期可用性增强（迭代）：
+- 发现页支持关键词筛选（标题/作者/参数）；
+- 增加“每周挑战”入口与挑战引导页；
+- 增加作品举报入口，并接入 `/reports` 提交。
+- 账号邮箱、挑战参与状态、举报历史支持本地持久化并在个人页展示。

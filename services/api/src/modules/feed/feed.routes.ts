@@ -14,8 +14,18 @@ function clamp(value: number): number {
 }
 
 export function registerFeedRoutes(app: FastifyInstance) {
-  app.get("/feed/recommended", async (_req, reply) => {
-    const posts = postService.list();
+  app.get<{ Querystring: { keyword?: string } }>("/feed/recommended", async (req, reply) => {
+    const keyword = req.query.keyword?.trim().toLowerCase() ?? "";
+    const allPosts = postService.list();
+    const posts =
+      keyword.length === 0
+        ? allPosts
+        : allPosts.filter(
+            (post) =>
+              post.title.toLowerCase().includes(keyword) ||
+              post.description.toLowerCase().includes(keyword) ||
+              post.intent.toLowerCase().includes(keyword)
+          );
     const reviewsByPostId = Object.fromEntries(
       posts.map((post) => [
         post.id,
