@@ -1,5 +1,8 @@
 package com.photoapp.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -8,8 +11,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,7 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.photoapp.R
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -60,8 +69,10 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
     LaunchedEffect(uiState.isLoggedIn, currentRoute) {
         // Only redirect from login route after auth.
         if (uiState.isLoggedIn && (currentRoute == null || currentRoute == ROUTE_LOGIN)) {
-            navController.navigate(ROUTE_DISCOVER) {
-                popUpTo(ROUTE_LOGIN) { inclusive = true }
+            runCatching {
+                navController.navigate(ROUTE_DISCOVER) {
+                    popUpTo(ROUTE_LOGIN) { inclusive = true }
+                }
             }
         }
     }
@@ -72,18 +83,56 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
         }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = ROUTE_LOGIN
-    ) {
-        composable(ROUTE_LOGIN) {
+    val showBottomBar = uiState.isLoggedIn && currentRoute != ROUTE_LOGIN
+
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar {
+                    NavigationBarItem(
+                        selected = currentRoute == ROUTE_DISCOVER,
+                        onClick = { runCatching { navController.navigate(ROUTE_DISCOVER) } },
+                        label = { Text("发现") },
+                        icon = { Icon(painterResource(id = R.drawable.ic_nav_home), contentDescription = "discover") }
+                    )
+                    NavigationBarItem(
+                        selected = currentRoute == ROUTE_CREATE_POST,
+                        onClick = { runCatching { navController.navigate(ROUTE_CREATE_POST) } },
+                        label = { Text("发布") },
+                        icon = { Icon(painterResource(id = R.drawable.ic_nav_add), contentDescription = "publish") }
+                    )
+                    NavigationBarItem(
+                        selected = currentRoute == ROUTE_PROFILE,
+                        onClick = { runCatching { navController.navigate(ROUTE_PROFILE) } },
+                        label = { Text("我的") },
+                        icon = { Icon(painterResource(id = R.drawable.ic_nav_person), contentDescription = "profile") }
+                    )
+                }
+            }
+        }
+    ) { innerPadding ->
+        NavHost(
+            navController = navController,
+            startDestination = ROUTE_LOGIN,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+        composable(
+            route = ROUTE_LOGIN,
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) {
             LoginScreen(
                 isLoading = uiState.isLoading,
                 errorMessage = uiState.errorMessage,
                 onLogin = authViewModel::login
             )
         }
-        composable(ROUTE_DISCOVER) {
+        composable(
+            route = ROUTE_DISCOVER,
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) {
             FeedScreen(
                 posts = PostRepository.posts,
                 onOpenCreatePost = { navController.navigate(ROUTE_CREATE_POST) },
@@ -122,7 +171,11 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 reportHint = reportHint
             )
         }
-        composable(ROUTE_CREATE_POST) {
+        composable(
+            route = ROUTE_CREATE_POST,
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) {
             CreatePostScreen(
                 onPublish = { title, intent, imageUrl, exifSummary, authorName ->
                     scope.launch {
@@ -140,10 +193,18 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 }
             )
         }
-        composable(ROUTE_REVIEW) {
+        composable(
+            route = ROUTE_REVIEW,
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) {
             ReviewSheet(onBack = { navController.popBackStack() })
         }
-        composable(ROUTE_PROFILE) {
+        composable(
+            route = ROUTE_PROFILE,
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) {
             ProfileScreen(
                 posts = PostRepository.posts,
                 email = uiState.email,
@@ -152,7 +213,11 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 onBack = { navController.popBackStack() }
             )
         }
-        composable(ROUTE_CHALLENGE) {
+        composable(
+            route = ROUTE_CHALLENGE,
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) {
             WeeklyChallengeScreen(
                 joinedAt = uiState.challengeJoinedAt,
                 onJoinChallenge = authViewModel::joinWeeklyChallenge,
@@ -160,7 +225,11 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 onBack = { navController.popBackStack() }
             )
         }
-        composable("$ROUTE_REPORT/{postId}") { backStackEntry ->
+        composable(
+            route = "$ROUTE_REPORT/{postId}",
+            enterTransition = { fadeIn(animationSpec = tween(220)) },
+            exitTransition = { fadeOut(animationSpec = tween(180)) }
+        ) { backStackEntry ->
             val postId = backStackEntry.arguments?.getString("postId").orEmpty()
             ReportScreen(
                 targetPostId = postId,
@@ -188,6 +257,7 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
                 onBack = { navController.popBackStack() }
             )
         }
+    }
     }
 }
 
