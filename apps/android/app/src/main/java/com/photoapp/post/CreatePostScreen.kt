@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,58 +36,72 @@ fun CreatePostScreen(
     var exifSummary by rememberSaveable { mutableStateOf("") }
     var authorName by rememberSaveable { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(text = "发布作品")
-        OutlinedTextField(
-            value = title,
-            onValueChange = { title = it },
-            label = { Text("标题") },
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .testTag("create_post_title_input")
-        )
-        OutlinedTextField(
-            value = intent,
-            onValueChange = { intent = it },
-            label = { Text("创作意图") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("create_post_intent_input")
-        )
-        OutlinedTextField(
-            value = imageUrl,
-            onValueChange = { imageUrl = it },
-            label = { Text("图片地址") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("create_post_image_input")
-        )
-        OutlinedTextField(
-            value = exifSummary,
-            onValueChange = { exifSummary = it },
-            label = { Text("参数摘要") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("create_post_exif_input")
-        )
-        OutlinedTextField(
-            value = authorName,
-            onValueChange = { authorName = it },
-            label = { Text("作者") },
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag("create_post_author_input")
-        )
-        Button(
-            onClick = { onPublish(title, intent, imageUrl, exifSummary, authorName) },
-            modifier = Modifier.testTag("publish_post_button")
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(text = "发布")
+            Text(text = "发布作品", style = MaterialTheme.typography.headlineSmall)
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    OutlinedTextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        label = { Text("标题") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("create_post_title_input")
+                    )
+                    OutlinedTextField(
+                        value = intent,
+                        onValueChange = { intent = it },
+                        label = { Text("创作意图") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("create_post_intent_input")
+                    )
+                    OutlinedTextField(
+                        value = imageUrl,
+                        onValueChange = { imageUrl = it },
+                        label = { Text("图片地址") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("create_post_image_input")
+                    )
+                    OutlinedTextField(
+                        value = exifSummary,
+                        onValueChange = { exifSummary = it },
+                        label = { Text("参数摘要") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("create_post_exif_input")
+                    )
+                    OutlinedTextField(
+                        value = authorName,
+                        onValueChange = { authorName = it },
+                        label = { Text("作者") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("create_post_author_input")
+                    )
+                    Button(
+                        onClick = { onPublish(title, intent, imageUrl, exifSummary, authorName) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("publish_post_button")
+                    ) {
+                        Text(text = "发布")
+                    }
+                }
+            }
         }
     }
 }

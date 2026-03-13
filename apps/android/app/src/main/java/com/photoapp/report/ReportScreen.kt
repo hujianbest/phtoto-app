@@ -6,7 +6,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,34 +28,50 @@ fun ReportScreen(
 ) {
     var reason by rememberSaveable { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(text = "举报作品")
-        Text(text = "目标ID: $targetPostId")
-        OutlinedTextField(
-            value = reason,
-            onValueChange = { reason = it },
-            label = { Text("举报原因") },
+    Scaffold(containerColor = MaterialTheme.colorScheme.background) { innerPadding ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .testTag("report_reason_input")
-        )
-        Button(
-            onClick = { onSubmit(reason) },
-            enabled = reason.trim().isNotEmpty(),
-            modifier = Modifier.testTag("report_submit_button")
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(text = "提交举报")
-        }
-        Button(
-            onClick = onBack,
-            modifier = Modifier.testTag("report_back_button")
-        ) {
-            Text(text = "返回发现页")
+            Text(text = "举报作品", style = MaterialTheme.typography.headlineSmall)
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(14.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(text = "目标ID: $targetPostId", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedTextField(
+                        value = reason,
+                        onValueChange = { reason = it },
+                        label = { Text("举报原因") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("report_reason_input")
+                    )
+                    Button(
+                        onClick = { onSubmit(reason) },
+                        enabled = reason.trim().isNotEmpty(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("report_submit_button")
+                    ) {
+                        Text(text = "提交举报")
+                    }
+                    Button(
+                        onClick = onBack,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("report_back_button")
+                    ) {
+                        Text(text = "返回发现页")
+                    }
+                }
+            }
         }
     }
 }

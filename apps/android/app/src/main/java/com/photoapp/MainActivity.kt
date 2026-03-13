@@ -3,14 +3,14 @@ package com.photoapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.MaterialTheme
 import com.photoapp.navigation.AppNavGraph
+import com.photoapp.ui.theme.PhotoAppTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MaterialTheme {
+            PhotoAppTheme(darkTheme = true) {
                 AppNavGraph()
             }
         }
