@@ -15,6 +15,8 @@ data class Post(
 )
 
 object PostRepository {
+    private val EMAIL_REGEX = Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")
+
     enum class FeedMode {
         RECOMMENDED,
         FOLLOWING
@@ -70,12 +72,17 @@ object PostRepository {
         // Keep local UX responsive first.
         publishLocal(title, intent, imageUrl, exifSummary, authorName)
         runCatching {
+            val authorEmailForApi = authorName
+                .trim()
+                .lowercase()
+                .takeIf { EMAIL_REGEX.matches(it) }
+                ?: viewerEmail
             ApiClient.createPost(
                 title = title,
                 intent = intent,
                 imageUrl = imageUrl,
                 exifSummary = exifSummary,
-                authorEmail = viewerEmail
+                authorEmail = authorEmailForApi
             )
         }
     }
@@ -90,11 +97,17 @@ object PostRepository {
                 FeedMode.FOLLOWING -> ApiClient.fetchFollowingPosts(viewerEmail)
             }
         }.getOrDefault(emptyList())
-        if (remotePosts.isEmpty()) {
+        if (mode == FeedMode.FOLLOWING) {
+            // Following tab should reflect current server result, including empty states.
+            postStore.clear()
+            postStore.addAll(remotePosts)
             return
         }
-        postStore.clear()
-        postStore.addAll(remotePosts)
+
+        if (remotePosts.isNotEmpty()) {
+            postStore.clear()
+            postStore.addAll(remotePosts)
+        }
     }
 
     fun clearForTest() {
