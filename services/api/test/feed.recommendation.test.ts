@@ -103,4 +103,50 @@ describe("feed recommendation route", () => {
       await app.close();
     }
   });
+
+  it("GET /feed/recommended supports structured filters", async () => {
+    const app = buildServer();
+    try {
+      await app.ready();
+
+      const cityPost = await request(app.server).post("/posts").send({
+        title: "City night",
+        description: "city sample",
+        imageUrl: "https://cdn.example.com/city.jpg",
+        intent: "urban",
+        metadata: {
+          genre: "街拍",
+          gearBrand: "sony",
+          city: "shanghai",
+          challengeTag: "night"
+        }
+      });
+      const mountainPost = await request(app.server).post("/posts").send({
+        title: "Mountain day",
+        description: "mountain sample",
+        imageUrl: "https://cdn.example.com/mountain-day.jpg",
+        intent: "nature",
+        metadata: {
+          genre: "风光",
+          gearBrand: "canon",
+          city: "lijiang",
+          challengeTag: "sunrise"
+        }
+      });
+      expect(cityPost.status).toBe(201);
+      expect(mountainPost.status).toBe(201);
+
+      const res = await request(app.server).get("/feed/recommended").query({
+        city: "shanghai",
+        challengeTag: "night"
+      });
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body.items)).toBe(true);
+      const ids = res.body.items.map((item: { id: string }) => item.id);
+      expect(ids).toContain(cityPost.body.id);
+      expect(ids).not.toContain(mountainPost.body.id);
+    } finally {
+      await app.close();
+    }
+  });
 });

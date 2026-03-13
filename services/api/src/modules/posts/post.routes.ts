@@ -7,6 +7,7 @@ interface PostBody {
   imageUrl?: string;
   intent?: string;
   authorEmail?: string;
+  metadata?: unknown;
   exif?: unknown;
 }
 
@@ -21,7 +22,15 @@ export class PostError extends Error {
 
 function validatePostBody(
   body?: PostBody
-): asserts body is { title: string; description: string; imageUrl: string; intent: string; authorEmail?: string; exif?: unknown } {
+): asserts body is {
+  title: string;
+  description: string;
+  imageUrl: string;
+  intent: string;
+  authorEmail?: string;
+  metadata?: { genre?: string; gearBrand?: string; city?: string; challengeTag?: string };
+  exif?: unknown;
+} {
   if (!body) {
     throw new PostError(400, "Request body is required.");
   }
@@ -56,6 +65,26 @@ function validatePostBody(
     const isEmailFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     if (!isEmailFormatValid) {
       throw new PostError(400, "authorEmail format is invalid.");
+    }
+  }
+
+  if (body.metadata !== undefined) {
+    if (typeof body.metadata !== "object" || body.metadata === null || Array.isArray(body.metadata)) {
+      throw new PostError(400, "metadata must be an object.");
+    }
+    const metadata = body.metadata as Record<string, unknown>;
+    const allowedKeys = new Set(["genre", "gearBrand", "city", "challengeTag"]);
+    for (const key of Object.keys(metadata)) {
+      if (!allowedKeys.has(key)) {
+        throw new PostError(400, `metadata.${key} is not allowed.`);
+      }
+      const value = metadata[key];
+      if (value !== undefined && typeof value !== "string") {
+        throw new PostError(400, `metadata.${key} must be a string.`);
+      }
+      if (typeof value === "string" && value.trim().length > 64) {
+        throw new PostError(400, `metadata.${key} must be at most 64 characters.`);
+      }
     }
   }
 }

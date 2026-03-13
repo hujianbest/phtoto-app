@@ -4,6 +4,13 @@ export interface PostExif {
   shutter?: string;
 }
 
+export interface PostMetadata {
+  genre?: string;
+  gearBrand?: string;
+  city?: string;
+  challengeTag?: string;
+}
+
 export interface Post {
   id: string;
   title: string;
@@ -12,6 +19,7 @@ export interface Post {
   intent: string;
   authorEmail: string;
   exif: PostExif;
+  metadata: PostMetadata;
   createdAt: string;
 }
 
@@ -21,5 +29,6 @@ export interface CreatePostInput {
   imageUrl: string;
   intent: string;
   authorEmail?: string;
+  metadata?: PostMetadata;
   exif?: unknown;
 }

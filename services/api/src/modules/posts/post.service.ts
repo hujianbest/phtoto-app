@@ -14,6 +14,12 @@ export class PostService {
       intent: input.intent.trim(),
       authorEmail: input.authorEmail?.trim().toLowerCase() || "anonymous@photo.app",
       exif: extractExif(input.exif),
+      metadata: {
+        genre: input.metadata?.genre?.trim(),
+        gearBrand: input.metadata?.gearBrand?.trim().toLowerCase(),
+        city: input.metadata?.city?.trim().toLowerCase(),
+        challengeTag: input.metadata?.challengeTag?.trim().toLowerCase()
+      },
       createdAt: new Date().toISOString()
     };
 

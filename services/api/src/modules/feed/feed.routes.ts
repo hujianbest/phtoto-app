@@ -15,18 +15,34 @@ function clamp(value: number): number {
 }
 
 export function registerFeedRoutes(app: FastifyInstance) {
-  app.get<{ Querystring: { keyword?: string } }>("/feed/recommended", async (req, reply) => {
+  app.get<{
+    Querystring: {
+      keyword?: string;
+      genre?: string;
+      gearBrand?: string;
+      city?: string;
+      challengeTag?: string;
+    };
+  }>("/feed/recommended", async (req, reply) => {
     const keyword = req.query.keyword?.trim().toLowerCase() ?? "";
+    const genre = req.query.genre?.trim().toLowerCase() ?? "";
+    const gearBrand = req.query.gearBrand?.trim().toLowerCase() ?? "";
+    const city = req.query.city?.trim().toLowerCase() ?? "";
+    const challengeTag = req.query.challengeTag?.trim().toLowerCase() ?? "";
     const allPosts = postService.list();
-    const posts =
-      keyword.length === 0
-        ? allPosts
-        : allPosts.filter(
-            (post) =>
-              post.title.toLowerCase().includes(keyword) ||
-              post.description.toLowerCase().includes(keyword) ||
-              post.intent.toLowerCase().includes(keyword)
-          );
+    const posts = allPosts.filter((post) => {
+      const keywordMatched =
+        keyword.length === 0 ||
+        post.title.toLowerCase().includes(keyword) ||
+        post.description.toLowerCase().includes(keyword) ||
+        post.intent.toLowerCase().includes(keyword);
+      const genreMatched = genre.length === 0 || (post.metadata.genre ?? "").toLowerCase() === genre;
+      const gearBrandMatched = gearBrand.length === 0 || (post.metadata.gearBrand ?? "").toLowerCase() === gearBrand;
+      const cityMatched = city.length === 0 || (post.metadata.city ?? "").toLowerCase() === city;
+      const challengeMatched =
+        challengeTag.length === 0 || (post.metadata.challengeTag ?? "").toLowerCase() === challengeTag;
+      return keywordMatched && genreMatched && gearBrandMatched && cityMatched && challengeMatched;
+    });
     const reviewsByPostId = Object.fromEntries(
       posts.map((post) => [
         post.id,
