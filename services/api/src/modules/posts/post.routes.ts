@@ -6,6 +6,7 @@ interface PostBody {
   description?: string;
   imageUrl?: string;
   intent?: string;
+  authorEmail?: string;
   exif?: unknown;
 }
 
@@ -20,7 +21,7 @@ export class PostError extends Error {
 
 function validatePostBody(
   body?: PostBody
-): asserts body is { title: string; description: string; imageUrl: string; intent: string; exif?: unknown } {
+): asserts body is { title: string; description: string; imageUrl: string; intent: string; authorEmail?: string; exif?: unknown } {
   if (!body) {
     throw new PostError(400, "Request body is required.");
   }
@@ -48,6 +49,14 @@ function validatePostBody(
 
   if (parsedUrl.protocol !== "http:" && parsedUrl.protocol !== "https:") {
     throw new PostError(400, "imageUrl must be a valid http/https URL.");
+  }
+
+  if (body.authorEmail !== undefined) {
+    const email = body.authorEmail.trim().toLowerCase();
+    const isEmailFormatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    if (!isEmailFormatValid) {
+      throw new PostError(400, "authorEmail format is invalid.");
+    }
   }
 }
 

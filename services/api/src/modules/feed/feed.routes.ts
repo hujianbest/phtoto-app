@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { buildRecommendationSignals, rankRecommendedPosts } from "recommendation";
 import { postService } from "../posts/post.service";
 import { reviewService } from "../reviews/review.service";
+import { followService } from "../social/follow.service";
 
 function clamp(value: number): number {
   if (value < 0) {
@@ -66,5 +67,20 @@ export function registerFeedRoutes(app: FastifyInstance) {
         weightVersion: item.weightVersion
       }))
     });
+  });
+
+  app.get<{ Querystring: { email?: string } }>("/feed/following", async (req, reply) => {
+    const email = req.query.email?.trim().toLowerCase();
+    if (!email) {
+      return reply.code(400).send({ message: "email is required." });
+    }
+
+    const following = followService.getFollowing(email);
+    const posts = postService
+      .list()
+      .filter((post) => following.has(post.authorEmail))
+      .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
+
+    return reply.code(200).send({ items: posts });
   });
 }

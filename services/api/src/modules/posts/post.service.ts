@@ -12,6 +12,7 @@ export class PostService {
       description: input.description.trim(),
       imageUrl: input.imageUrl.trim(),
       intent: input.intent.trim(),
+      authorEmail: input.authorEmail?.trim().toLowerCase() || "anonymous@photo.app",
       exif: extractExif(input.exif),
       createdAt: new Date().toISOString()
     };

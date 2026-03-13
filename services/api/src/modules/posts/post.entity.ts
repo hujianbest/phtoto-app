@@ -10,6 +10,7 @@ export interface Post {
   description: string;
   imageUrl: string;
   intent: string;
+  authorEmail: string;
   exif: PostExif;
   createdAt: string;
 }
@@ -19,5 +20,6 @@ export interface CreatePostInput {
   description: string;
   imageUrl: string;
   intent: string;
+  authorEmail?: string;
   exif?: unknown;
 }

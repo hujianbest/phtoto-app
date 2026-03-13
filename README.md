@@ -65,3 +65,4 @@
 - 增加作品举报入口，并接入 `/reports` 提交。
 - 账号邮箱、挑战参与状态、举报历史支持本地持久化并在个人页展示。
 - 每周挑战参与已接入 API：`POST /challenges/weekly/join`。
+- 新增关注关系与关注流 API：`POST /social/follow`、`GET /feed/following`。
