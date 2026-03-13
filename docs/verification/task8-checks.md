@@ -45,3 +45,27 @@
 3. 执行：
    - `.\gradlew :app:assembleDebug`
    - `.\gradlew :app:connectedDebugAndroidTest`
+
+## 复验更新（环境已打通）
+
+日期：2026-03-13（同日补充）
+
+### 环境打通结果
+- 已补齐并验证：
+  - Gradle Wrapper 可用（`apps/android/gradlew.bat`）
+  - Android SDK / Emulator / ADB 可用
+  - `local.properties` 与 `android.useAndroidX=true` 已配置
+
+### 复验过程（含问题收敛）
+1. 首次真实执行 `.\gradlew.bat connectedDebugAndroidTest`  
+   - 失败：`auth.preferences_pb` 出现 `multiple DataStores active`
+2. 修复：收敛 DataStore 定义与测试登录态处理
+3. 再次执行  
+   - 失败：登录后自动重定向条件过宽，影响非 discover 路由
+4. 修复：`AppNavGraph` 仅在登录路由触发登录后跳转
+5. 最终执行 `.\gradlew.bat connectedDebugAndroidTest`
+   - 结果：`BUILD SUCCESSFUL`
+   - 输出：`Finished 3 tests on photoappApi34(AVD) - 14`
+
+### 结论
+- Task 8 在设备级联调已复验通过（不再是环境阻塞态）。

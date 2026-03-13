@@ -38,7 +38,8 @@ fun AppNavGraph(authViewModel: AuthViewModel = viewModel()) {
     val currentRoute = navBackStackEntry?.destination?.route
 
     LaunchedEffect(uiState.isLoggedIn, currentRoute) {
-        if (uiState.isLoggedIn && currentRoute != ROUTE_DISCOVER) {
+        // Only redirect from login route after auth.
+        if (uiState.isLoggedIn && (currentRoute == null || currentRoute == ROUTE_LOGIN)) {
             navController.navigate(ROUTE_DISCOVER) {
                 popUpTo(ROUTE_LOGIN) { inclusive = true }
             }

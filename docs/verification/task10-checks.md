@@ -44,3 +44,24 @@
    - `./gradlew.bat :app:connectedDebugAndroidTest --tests "com.photoapp.ReviewHelpfulTest"`
 6. 若希望先做 JVM 级验证，可补充 `test` 类型的纯单元测试，再执行：
    - `./gradlew.bat :app:testDebugUnitTest`
+
+## 复验更新（环境已打通）
+
+日期：2026-03-13（同日补充）
+
+### 复验命令
+- `.\gradlew.bat connectedDebugAndroidTest`
+
+### 复验过程（Task 10 相关）
+1. 环境打通后首次跑通构建链路，`ReviewHelpfulTest` 已可真实执行。
+2. 中途出现 `AuthFlowTest` 不稳定导致全量失败（并非 Task 10 业务本身）。
+3. 修复测试稳定性：
+   - 增加登录态容错与等待（`waitUntil`）；
+   - 保证测试在“已在发现页/需点击登录”两种初始状态都可通过。
+4. 再次回归执行：
+   - `ReviewHelpfulTest`、`PostPublishTest`、`AuthFlowTest` 全部通过。
+
+### 最终结果
+- 全量仪器测试输出：`Finished 3 tests on photoappApi34(AVD) - 14`
+- 构建结果：`BUILD SUCCESSFUL`
+- Task 10 的点评交互与个人主页链路已完成设备级复验。

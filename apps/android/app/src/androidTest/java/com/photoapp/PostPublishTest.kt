@@ -1,12 +1,11 @@
 package com.photoapp
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
-import androidx.test.core.app.ActivityScenario
 import com.photoapp.post.PostRepository
 import org.junit.Rule
 import org.junit.Test
@@ -14,15 +13,12 @@ import org.junit.Test
 class PostPublishTest {
 
     @get:Rule
-    val composeRule = createEmptyComposeRule()
+    val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
     fun createPost_thenOpenFeed_cardIsVisible() {
-        resetAppState()
         PostRepository.clearForTest()
-        ActivityScenario.launch(MainActivity::class.java)
-
-        composeRule.onNodeWithTag("login_button").performClick()
+        loginIfNeeded(composeRule)
         composeRule.onNodeWithTag("open_create_post_button").performClick()
 
         composeRule.onNodeWithTag("create_post_title_input").performTextInput("晨雾山谷")

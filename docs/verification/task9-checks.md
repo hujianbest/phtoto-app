@@ -45,3 +45,24 @@
 2. 配置 Android SDK 与可用模拟器后执行：
    - `.\gradlew :app:assembleDebug`
    - `.\gradlew :app:connectedDebugAndroidTest --tests com.photoapp.PostPublishTest`
+
+## 复验更新（环境已打通）
+
+日期：2026-03-13（同日补充）
+
+### 复验命令
+- `.\gradlew.bat connectedDebugAndroidTest`
+
+### 复验过程（Task 9 相关）
+1. 真实设备执行早期失败：
+   - 现象：`create_post_title_input` 等节点无法找到
+2. 根因定位：
+   - 登录后路由跳转逻辑过宽，进入发布页后被强制拉回发现页
+3. 修复：
+   - 调整 `AppNavGraph` 的登录后跳转条件，仅在 `login` 路由触发
+4. 回归执行：
+   - `PostPublishTest` 通过（发帖 -> 回发现页 -> 卡片可见）
+
+### 最终结果
+- 全量仪器测试通过：`BUILD SUCCESSFUL`
+- Task 9 的发布与发现流 UI 已完成设备级验证。

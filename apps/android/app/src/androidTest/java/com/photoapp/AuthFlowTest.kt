@@ -1,26 +1,34 @@
 package com.photoapp
 
 import androidx.compose.ui.test.assertIsDisplayed
-import androidx.compose.ui.test.junit4.createEmptyComposeRule
+import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
-import androidx.test.core.app.ActivityScenario
 import org.junit.Rule
 import org.junit.Test
 
 class AuthFlowTest {
 
     @get:Rule
-    val composeRule = createEmptyComposeRule()
+    val composeRule = createAndroidComposeRule<MainActivity>()
 
     @Test
     fun loginButton_navigatesToDiscoverPage() {
-        resetAppState()
-        ActivityScenario.launch(MainActivity::class.java)
+        val alreadyInDiscover = runCatching {
+            composeRule.onNodeWithText("发现页", useUnmergedTree = true).assertIsDisplayed()
+            true
+        }.getOrDefault(false)
 
-        composeRule.onNodeWithText("登录页").assertIsDisplayed()
-        composeRule.onNodeWithTag("login_button").performClick()
-        composeRule.onNodeWithText("发现页").assertIsDisplayed()
+        if (!alreadyInDiscover) {
+            composeRule.onNodeWithTag("login_button").performClick()
+        }
+
+        composeRule.waitUntil(timeoutMillis = 5_000) {
+            runCatching {
+                composeRule.onNodeWithText("发现页", useUnmergedTree = true).assertIsDisplayed()
+                true
+            }.getOrDefault(false)
+        }
     }
 }

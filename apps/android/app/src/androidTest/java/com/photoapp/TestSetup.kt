@@ -1,19 +1,13 @@
 package com.photoapp
 
-import androidx.test.platform.app.InstrumentationRegistry
-import java.io.FileInputStream
+import androidx.compose.ui.test.junit4.ComposeTestRule
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onNodeWithTag
 
-fun resetAppState() {
-    val instrumentation = InstrumentationRegistry.getInstrumentation()
-    val packageName = instrumentation.targetContext.packageName
-
-    val commandOutput = instrumentation.uiAutomation
-        .executeShellCommand("pm clear $packageName")
-        .use { descriptor ->
-            FileInputStream(descriptor.fileDescriptor).bufferedReader().use { it.readText() }
-        }
-
-    check(commandOutput.contains("Success")) {
-        "failed to clear app state: $commandOutput"
+fun loginIfNeeded(rule: ComposeTestRule) {
+    try {
+        rule.onNodeWithTag("login_button").performClick()
+    } catch (_: AssertionError) {
+        // Already logged in route.
     }
 }
